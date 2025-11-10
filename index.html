@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Mini Tools – Palindrome & Car Tax Band</title>
+  <title>Mini Tools – Palindrome, Car Tax & EV mpg-e</title>
   <style>
     :root {
       --transition-speed: 0.2s;
@@ -291,6 +291,12 @@
       margin-top: 4px;
       min-height: 1em;
     }
+
+    .ev-lines {
+      margin-top: 6px;
+      font-size: 0.9rem;
+      line-height: 1.5;
+    }
   </style>
 </head>
 <body data-theme="dark">
@@ -298,7 +304,7 @@
     <div class="header">
       <div class="header-text">
         <h1>Mini Tools</h1>
-        <p>Palindrome checker & UK car tax band lookup (CO₂-based)</p>
+        <p>Palindrome checker, UK car tax band lookup & EV mpg-e</p>
       </div>
       <button class="theme-toggle" id="theme-toggle" type="button">
         <span id="theme-icon">🌙</span>
@@ -312,6 +318,9 @@
       </button>
       <button class="switch-btn" data-target="tool-tax">
         Car Tax Band Lookup
+      </button>
+      <button class="switch-btn" data-target="tool-evmpg">
+        EV mi/kWh → mpg-e
       </button>
     </div>
 
@@ -362,6 +371,31 @@
           <a href="https://www.gov.uk/vehicle-tax-rate-tables" target="_blank" rel="noreferrer">
             gov.uk vehicle tax tables
           </a>.
+        </p>
+      </div>
+
+      <!-- EV mi/kWh to mpg-e tool -->
+      <div id="tool-evmpg" class="tool">
+        <h2>EV efficiency → mpg-equivalent</h2>
+
+        <label for="ev-mpkwh">EV efficiency (miles per kWh)</label>
+        <input id="ev-mpkwh" type="number" min="0" step="0.1" placeholder="e.g. 4.0" />
+
+        <label for="ev-price">Electricity price (optional, pence per kWh)</label>
+        <input id="ev-price" type="number" min="0" step="0.1" placeholder="e.g. 30" />
+
+        <button type="button" class="primary" id="ev-calc-btn">Calculate mpg-e</button>
+
+        <div id="ev-result" class="result info">
+          <div id="ev-lines" class="ev-lines"></div>
+          <div id="ev-cost-line" class="hint"></div>
+        </div>
+
+        <p class="note">
+          Uses approximate fuel energy content for UK mpg-equivalent:
+          about 9.5 kWh per litre of petrol and 10.7 kWh per litre of diesel,
+          with 4.546 litres per UK gallon. This is for rough comparison of
+          efficiency and running-cost feel, not official VED or WLTP data.
         </p>
       </div>
     </div>
@@ -568,7 +602,7 @@
       if (e.key === "Enter") lookupTaxBand();
     });
 
-    // Copy to clipboard
+    // Copy to clipboard for tax summary
     async function copyTaxSummary() {
       if (!currentTaxSummary) return;
 
@@ -576,7 +610,6 @@
         if (navigator.clipboard && navigator.clipboard.writeText) {
           await navigator.clipboard.writeText(currentTaxSummary);
         } else {
-          // Fallback for very old browsers
           const temp = document.createElement("textarea");
           temp.value = currentTaxSummary;
           temp.style.position = "fixed";
@@ -600,6 +633,57 @@
     }
 
     copyBtn.addEventListener("click", copyTaxSummary);
+
+    // --- EV mi/kWh -> mpg-e tool ---
+
+    const LITRES_PER_UK_GALLON = 4.54609;
+    const KWH_PER_LITRE_PETROL = 9.5;   // approx energy content
+    const KWH_PER_LITRE_DIESEL = 10.7;  // approx energy content
+
+    const evMpkwhInput = document.getElementById("ev-mpkwh");
+    const evPriceInput = document.getElementById("ev-price");
+    const evCalcBtn = document.getElementById("ev-calc-btn");
+    const evResultBox = document.getElementById("ev-result");
+    const evLines = document.getElementById("ev-lines");
+    const evCostLine = document.getElementById("ev-cost-line");
+
+    function calculateEvMpg() {
+      const rawEff = evMpkwhInput.value.trim();
+      const eff = parseFloat(rawEff);
+      const rawPrice = evPriceInput.value.trim();
+      const priceP = rawPrice === "" ? NaN : parseFloat(rawPrice);
+
+      evResultBox.style.display = "block";
+      evLines.textContent = "";
+      evCostLine.textContent = "";
+
+      if (rawEff === "" || isNaN(eff) || eff <= 0) {
+        evLines.textContent = "Please enter a valid efficiency in miles per kWh.";
+        return;
+      }
+
+      const mpgPetrol = eff * KWH_PER_LITRE_PETROL * LITRES_PER_UK_GALLON;
+      const mpgDiesel = eff * KWH_PER_LITRE_DIESEL * LITRES_PER_UK_GALLON;
+
+      evLines.innerHTML =
+        `${eff.toFixed(2)} miles per kWh is roughly equivalent to:<br>` +
+        `• <strong>${mpgPetrol.toFixed(1)} mpg (UK)</strong> on petrol energy content<br>` +
+        `• <strong>${mpgDiesel.toFixed(1)} mpg (UK)</strong> on diesel energy content`;
+
+      if (!isNaN(priceP) && priceP > 0) {
+        const costPerMileP = priceP / eff; // pence per mile
+        evCostLine.textContent =
+          `At ${priceP.toFixed(1)}p per kWh, that’s about ${costPerMileP.toFixed(1)}p per mile in electricity.`;
+      }
+    }
+
+    evCalcBtn.addEventListener("click", calculateEvMpg);
+    evMpkwhInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") calculateEvMpg();
+    });
+    evPriceInput.addEventListener("keydown", e => {
+      if (e.key === "Enter") calculateEvMpg();
+    });
   </script>
 </body>
 </html>
