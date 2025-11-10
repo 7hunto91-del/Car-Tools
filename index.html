@@ -2,132 +2,45 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Car Tools – VED & EV Efficiency</title>
+  <title>Car Tools – EV Efficiency & VED Bands</title>
   <style>
-    :root {
-      --transition-speed: 0.2s;
-    }
-
+    :root { --transition-speed: 0.2s; }
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      min-height: 100vh;
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      align-items: flex-start;
-      padding: 32px 16px;
-      box-sizing: border-box;
+      min-height: 100vh; margin: 0; display: flex;
+      justify-content: center; align-items: flex-start;
+      padding: 32px 16px; box-sizing: border-box;
       transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
     }
-
-    /* Theme variables */
     body[data-theme="dark"] {
       background: radial-gradient(circle at top, #1f2937, #020617 60%);
       color: #e5e7eb;
-      --card-bg: #020617;
-      --border-color: #1f2937;
-      --muted-text: #9ca3af;
-      --input-bg: #020617;
-      --input-border: #4b5563;
-      --link-color: #60a5fa;
-      --result-ok-bg: #dcfce7;
-      --result-ok-text: #166534;
-      --result-no-bg: #fee2e2;
-      --result-no-text: #991b1b;
-      --result-info-bg: #0b1120;
-      --result-info-text: #e5e7eb;
-      --button-bg: linear-gradient(135deg, #2563eb, #22c55e);
-      --chip-bg: #020617;
-      --chip-border: #4b5563;
-      --header-subtle: #9ca3af;
+      --card-bg:#020617;--border-color:#1f2937;--muted-text:#9ca3af;--input-bg:#020617;
+      --input-border:#4b5563;--link-color:#60a5fa;--result-info-bg:#0b1120;--result-info-text:#e5e7eb;
+      --button-bg:linear-gradient(135deg,#2563eb,#22c55e);--chip-bg:#020617;--chip-border:#4b5563;
     }
-
     body[data-theme="light"] {
-      background: #f3f4f6;
-      color: #111827;
-      --card-bg: #ffffff;
-      --border-color: #e5e7eb;
-      --muted-text: #6b7280;
-      --input-bg: #f9fafb;
-      --input-border: #d1d5db;
-      --link-color: #2563eb;
-      --result-ok-bg: #dcfce7;
-      --result-ok-text: #166534;
-      --result-no-bg: #fee2e2;
-      --result-no-text: #991b1b;
-      --result-info-bg: #eff6ff;
-      --result-info-text: #1e3a8a;
-      --button-bg: linear-gradient(135deg, #2563eb, #22c55e);
-      --chip-bg: #ffffff;
-      --chip-border: #d1d5db;
-      --header-subtle: #6b7280;
+      background:#f3f4f6;color:#111827;
+      --card-bg:#fff;--border-color:#e5e7eb;--muted-text:#6b7280;--input-bg:#f9fafb;
+      --input-border:#d1d5db;--link-color:#2563eb;--result-info-bg:#eff6ff;--result-info-text:#1e3a8a;
+      --button-bg:linear-gradient(135deg,#2563eb,#22c55e);--chip-bg:#fff;--chip-border:#d1d5db;
     }
-
-    .container { width: 100%; max-width: 720px; }
-
-    .header {
-      display: flex; align-items: center; justify-content: space-between;
-      gap: 12px; margin-bottom: 16px;
-    }
-
-    .header-text h1 { margin: 0 0 4px; font-size: 1.7rem; }
-    .header-text p { margin: 0; font-size: 0.9rem; color: var(--header-subtle); }
-
-    .theme-toggle {
-      display: inline-flex; align-items: center; gap: 6px;
-      padding: 6px 10px; border-radius: 999px;
-      border: 1px solid var(--border-color);
-      background: var(--card-bg); font-size: 0.8rem; cursor: pointer;
-    }
-
-    .switcher {
-      display: flex; justify-content: center; margin: 20px auto 18px; gap: 8px; flex-wrap: wrap;
-    }
-
-    .switch-btn {
-      padding: 8px 16px; border-radius: 999px; border: 1px solid var(--chip-border);
-      background: var(--chip-bg); color: inherit; font-size: 0.9rem; cursor: pointer;
-      transition: background var(--transition-speed) ease;
-    }
-
-    .switch-btn.active {
-      background: var(--button-bg); border-color: transparent; font-weight: 600; color: #f9fafb;
-    }
-
-    .card {
-      background: var(--card-bg); border-radius: 16px; padding: 22px 24px;
-      box-shadow: 0 20px 45px rgba(0,0,0,0.18); border: 1px solid var(--border-color);
-    }
-
-    .tool { display: none; }
-    .tool.active { display: block; }
-
-    label { display: block; margin-bottom: 6px; font-size: 0.9rem; font-weight: 600; }
-    input, select {
-      width: 100%; padding: 9px 11px; border-radius: 10px;
-      border: 1px solid var(--input-border); background: var(--input-bg);
-      color: inherit; font-size: 0.95rem; margin-bottom: 12px;
-    }
-
-    button.primary {
-      width: 100%; padding: 10px 12px; border-radius: 10px; border: none;
-      font-size: 1rem; font-weight: 600; cursor: pointer;
-      background: var(--button-bg); color: white; margin-top: 4px;
-    }
-
-    .result {
-      margin-top: 14px; padding: 10px 12px; border-radius: 10px;
-      display: none; background: var(--result-info-bg); color: var(--result-info-text);
-      border: 1px solid #1d4ed8;
-    }
-
-    .hint, .note { margin-top: 8px; font-size: 0.8rem; color: var(--muted-text); line-height: 1.4; }
-
-    .section-divider {
-      margin: 16px 0 10px; border-top: 1px solid var(--border-color);
-      padding-top: 10px; font-size: 0.85rem; color: var(--muted-text);
-      font-weight: 600; text-transform: uppercase; letter-spacing: 0.04em;
-    }
+    .container{width:100%;max-width:720px;}
+    .header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:16px;}
+    .header-text h1{margin:0 0 4px;font-size:1.7rem;}
+    .header-text p{margin:0;font-size:0.9rem;color:var(--muted-text);}
+    .theme-toggle{display:inline-flex;align-items:center;gap:6px;padding:6px 10px;border-radius:999px;border:1px solid var(--border-color);background:var(--card-bg);font-size:0.8rem;cursor:pointer;}
+    .switcher{display:flex;justify-content:center;margin:20px auto 18px;gap:8px;flex-wrap:wrap;}
+    .switch-btn{padding:8px 16px;border-radius:999px;border:1px solid var(--chip-border);background:var(--chip-bg);cursor:pointer;}
+    .switch-btn.active{background:var(--button-bg);color:#fff;border:none;}
+    .card{background:var(--card-bg);border-radius:16px;padding:22px 24px;box-shadow:0 20px 45px rgba(0,0,0,0.18);border:1px solid var(--border-color);}
+    .tool{display:none}.tool.active{display:block}
+    label{display:block;margin-bottom:6px;font-size:0.9rem;font-weight:600;}
+    input,select{width:100%;padding:9px 11px;border-radius:10px;border:1px solid var(--input-border);background:var(--input-bg);color:inherit;font-size:0.95rem;margin-bottom:12px;}
+    button.primary{width:100%;padding:10px 12px;border-radius:10px;border:none;font-weight:600;cursor:pointer;background:var(--button-bg);color:white;}
+    .result{margin-top:14px;padding:10px 12px;border-radius:10px;display:none;background:var(--result-info-bg);color:var(--result-info-text);}
+    .hint,.note{margin-top:8px;font-size:0.8rem;color:var(--muted-text);line-height:1.4;}
+    .section-divider{margin:16px 0 10px;border-top:1px solid var(--border-color);padding-top:10px;font-size:0.85rem;color:var(--muted-text);font-weight:600;text-transform:uppercase;}
   </style>
 </head>
 <body data-theme="dark">
@@ -135,7 +48,7 @@
     <div class="header">
       <div class="header-text">
         <h1>Car Tools</h1>
-        <p>UK VED band lookup & EV efficiency converters</p>
+        <p>EV efficiency converters & UK VED lookup</p>
       </div>
       <button class="theme-toggle" id="theme-toggle" type="button">
         <span id="theme-icon">🌙</span><span id="theme-label">Dark</span>
@@ -143,38 +56,14 @@
     </div>
 
     <div class="switcher">
-      <button class="switch-btn active" data-target="tool-tax">Car Tax Band Lookup</button>
-      <button class="switch-btn" data-target="tool-evmpg">EV Efficiency Tools</button>
+      <button class="switch-btn active" data-target="tool-evmpg">EV Efficiency Tools</button>
+      <button class="switch-btn" data-target="tool-tax">Car Tax Band Lookup</button>
     </div>
 
     <div class="card">
-      <!-- Car tax band tool -->
-      <div id="tool-tax" class="tool active">
-        <h2>Car Tax Band Lookup (UK)</h2>
-        <label for="reg-period">Registration period</label>
-        <select id="reg-period">
-          <option value="2001-2017">1 Mar 2001 – 31 Mar 2017 (CO₂ bands A–M)</option>
-          <option value="2017plus">On or after 1 Apr 2017 (modern system)</option>
-        </select>
-        <label for="co2">CO₂ emissions (g/km)</label>
-        <input id="co2" type="number" min="0" placeholder="e.g. 119" />
-        <button class="primary" id="lookup-btn">Look up tax band</button>
-        <div id="tax-result" class="result"><div id="tax-main"></div><div id="tax-extra" class="hint"></div></div>
-        <p class="note">
-          Quick CO₂-based view only. For full rates and expensive-car supplement,
-          see <a href="https://www.gov.uk/vehicle-tax-rate-tables" target="_blank">gov.uk</a>.
-        </p>
-      </div>
-
-      <!-- EV tool -->
-      <div id="tool-evmpg" class="tool">
+      <!-- EV tool (Estimate first, mpg-e second) -->
+      <div id="tool-evmpg" class="tool active">
         <h2>EV Efficiency Tools</h2>
-
-        <div class="section-divider">Miles per kWh → mpg equivalent</div>
-        <input id="ev-mpkwh" type="number" min="0" step="0.1" placeholder="Efficiency (mi/kWh)" />
-        <input id="ev-price" type="number" min="0" step="0.1" placeholder="Electricity price (p/kWh, optional)" />
-        <button class="primary" id="ev-calc-btn">Calculate</button>
-        <div id="ev-result" class="result"><div id="ev-lines"></div><div id="ev-cost-line" class="hint"></div></div>
 
         <div class="section-divider">Estimate mi/kWh from range</div>
         <input id="ev-pack" type="number" min="0" step="0.1" placeholder="Usable battery (kWh)" />
@@ -183,71 +72,126 @@
         <button class="primary" id="ev-estimate-btn">Estimate efficiency</button>
         <div id="ev-est-result" class="result"><div id="ev-est-text"></div></div>
 
+        <div class="section-divider">Miles per kWh → mpg equivalent</div>
+        <input id="ev-mpkwh" type="number" min="0" step="0.1" placeholder="Efficiency (mi/kWh)" />
+        <input id="ev-price" type="number" min="0" step="0.1" placeholder="Electricity price (p/kWh, optional)" />
+        <button class="primary" id="ev-calc-btn">Calculate</button>
+        <div id="ev-result" class="result"><div id="ev-lines"></div><div id="ev-cost-line" class="hint"></div></div>
+
         <p class="note">
-          Energy equivalence: ~9.5 kWh/L petrol, ~10.7 kWh/L diesel, 4.546 L per UK gallon.
-          Values are indicative for comparison only.
+          ~9.5 kWh/L petrol · 10.7 kWh/L diesel · 4.546 L = 1 UK gal.  
+          Estimates are for comparison only.
+        </p>
+      </div>
+
+      <!-- Car tax band tool -->
+      <div id="tool-tax" class="tool">
+        <h2>Car Tax Band Lookup (UK)</h2>
+        <label for="reg-period">Registration period</label>
+        <select id="reg-period">
+          <option value="2001-2017">1 Mar 2001 – 31 Mar 2017 (A–M bands)</option>
+          <option value="2017plus">On or after 1 Apr 2017 (modern system)</option>
+        </select>
+        <label for="co2">CO₂ emissions (g/km)</label>
+        <input id="co2" type="number" min="0" placeholder="e.g. 119" />
+        <button class="primary" id="lookup-btn">Look up tax band</button>
+        <div id="tax-result" class="result">
+          <div id="tax-main"></div><div id="tax-extra" class="hint"></div>
+        </div>
+        <p class="note">
+          Quick CO₂-based view only. For full rates and expensive-car supplement,  
+          see <a href="https://www.gov.uk/vehicle-tax-rate-tables" target="_blank">gov.uk</a>.
         </p>
       </div>
     </div>
   </div>
 
   <script>
-    // Theme toggle
-    const body = document.body, toggle=document.getElementById("theme-toggle"),
-          icon=document.getElementById("theme-icon"), label=document.getElementById("theme-label");
-    function applyTheme(t){body.dataset.theme=t;icon.textContent=t==="light"?"☀️":"🌙";label.textContent=t==="light"?"Light":"Dark";
-      localStorage.setItem("car-tools-theme",t);}
-    applyTheme(localStorage.getItem("car-tools-theme")||"dark");
-    toggle.onclick=()=>applyTheme(body.dataset.theme==="dark"?"light":"dark");
+    // theme toggle
+    const b=document.body,t=document.getElementById("theme-toggle"),
+          i=document.getElementById("theme-icon"),l=document.getElementById("theme-label");
+    function setTheme(x){
+      b.dataset.theme=x;
+      i.textContent=x==="light"?"☀️":"🌙";
+      l.textContent=x==="light"?"Light":"Dark";
+      localStorage.setItem("car-tools-theme",x);
+    }
+    setTheme(localStorage.getItem("car-tools-theme")||"dark");
+    t.onclick=()=>setTheme(b.dataset.theme==="dark"?"light":"dark");
 
-    // Switch tabs
-    document.querySelectorAll(".switch-btn").forEach(btn=>{
-      btn.onclick=()=>{
-        document.querySelectorAll(".switch-btn").forEach(b=>b.classList.remove("active"));
-        document.querySelectorAll(".tool").forEach(t=>t.classList.remove("active"));
-        btn.classList.add("active");
-        document.getElementById(btn.dataset.target).classList.add("active");
-      };
+    // switcher
+    document.querySelectorAll(".switch-btn").forEach(btn=>btn.onclick=()=>{
+      document.querySelectorAll(".switch-btn").forEach(b=>b.classList.remove("active"));
+      document.querySelectorAll(".tool").forEach(t=>t.classList.remove("active"));
+      btn.classList.add("active");
+      document.getElementById(btn.dataset.target).classList.add("active");
     });
 
-    // Car tax lookup
-    const taxMain=document.getElementById("tax-main"),taxExtra=document.getElementById("tax-extra"),taxBox=document.getElementById("tax-result");
-    document.getElementById("lookup-btn").onclick=()=>{
-      const co2=parseFloat(document.getElementById("co2").value),period=document.getElementById("reg-period").value;
-      if(!co2){taxBox.style.display="block";taxMain.textContent="Enter a CO₂ value.";taxExtra.textContent="";return;}
-      taxBox.style.display="block";
-      if(period==="2001-2017"){
-        let band="M",range="Over 255";const map=[[100,"A"],[110,"B"],[120,"C"],[130,"D"],[140,"E"],[150,"F"],[165,"G"],[175,"H"],[185,"I"],[200,"J"],[225,"K"],[255,"L"]];
-        for(const [max,b] of map){if(co2<=max){band=b;range=`≤${max}`;break;}}
-        taxMain.textContent=`CO₂ ${co2} g/km → Band ${band} (${range} g/km)`;
-        taxExtra.textContent="For cars 1 Mar 2001 – 31 Mar 2017 (bands A–M).";
-      }else{
-        let label="";if(co2===0)label="Zero emission";else if(co2<=50)label="Ultra-low";else if(co2<=100)label="Low";else if(co2<=150)label="Medium";else if(co2<=225)label="High";else label="Very high";
-        taxMain.textContent=`CO₂ ${co2} g/km → ${label} first-year range.`;
-        taxExtra.textContent="Cars from 1 Apr 2017 – first year CO₂-based, then flat rate + £40k supplement if applicable.";
-      }
-    };
-
     // EV tools
-    const LPG=4.54609, PET=9.5, DIE=10.7;
-    const evLines=document.getElementById("ev-lines"),evCost=document.getElementById("ev-cost-line"),evResult=document.getElementById("ev-result");
+    const LPG=4.54609,PET=9.5,DIE=10.7;
+    const evLines=document.getElementById("ev-lines"),
+          evCost=document.getElementById("ev-cost-line"),
+          evRes=document.getElementById("ev-result");
     document.getElementById("ev-calc-btn").onclick=()=>{
-      const eff=parseFloat(document.getElementById("ev-mpkwh").value),price=parseFloat(document.getElementById("ev-price").value);
-      evResult.style.display="block";
+      const eff=parseFloat(document.getElementById("ev-mpkwh").value),
+            price=parseFloat(document.getElementById("ev-price").value);
+      evRes.style.display="block";
       if(!eff){evLines.textContent="Enter a valid mi/kWh.";evCost.textContent="";return;}
       const mpgP=eff*PET*LPG,mpgD=eff*DIE*LPG;
       evLines.innerHTML=`${eff.toFixed(2)} mi/kWh ≈ ${mpgP.toFixed(1)} mpg (petrol) | ${mpgD.toFixed(1)} mpg (diesel)`;
-      evCost.textContent=price?`≈ ${(price/eff).toFixed(1)} p/mile at ${price.toFixed(1)} p/kWh`:"";
+      evCost.textContent=price?`≈ ${(price/eff).toFixed(1)} p/mile @ ${price.toFixed(1)} p/kWh`:"";
     };
 
-    const evPack=document.getElementById("ev-pack"),evSoc=document.getElementById("ev-soc"),evRange=document.getElementById("ev-range"),
-          evEst=document.getElementById("ev-est-result"),evText=document.getElementById("ev-est-text");
+    const evPack=document.getElementById("ev-pack"),
+          evSoc=document.getElementById("ev-soc"),
+          evRange=document.getElementById("ev-range"),
+          evEst=document.getElementById("ev-est-result"),
+          evTxt=document.getElementById("ev-est-text");
     document.getElementById("ev-estimate-btn").onclick=()=>{
-      const p=parseFloat(evPack.value),s=parseFloat(evSoc.value),r=parseFloat(evRange.value);
+      const p=parseFloat(evPack.value),
+            s=parseFloat(evSoc.value),
+            r=parseFloat(evRange.value);
       evEst.style.display="block";
-      if(!p||!s||!r||s<=0||s>100){evText.textContent="Enter battery kWh, %, and range.";return;}
-      const mpk=r/(p*(s/100));
-      evText.textContent=`≈ ${mpk.toFixed(2)} mi/kWh based on ${r} mi at ${s}% of ${p} kWh usable battery.`;
+      if(!p||!s||!r||s<=0||s>100){
+        evTxt.textContent="Enter battery kWh, %, and range.";
+        return;
+      }
+      evTxt.textContent=`≈ ${(r/(p*(s/100))).toFixed(2)} mi/kWh based on ${r} mi at ${s}% of ${p} kWh.`;
+    };
+
+    // tax lookup
+    const taxMain=document.getElementById("tax-main"),
+          taxExtra=document.getElementById("tax-extra"),
+          taxBox=document.getElementById("tax-result");
+    document.getElementById("lookup-btn").onclick=()=>{
+      const co2=parseFloat(document.getElementById("co2").value),
+            period=document.getElementById("reg-period").value;
+      if(!co2){
+        taxBox.style.display="block";
+        taxMain.textContent="Enter a CO₂ value.";
+        taxExtra.textContent="";
+        return;
+      }
+      taxBox.style.display="block";
+      if(period==="2001-2017"){
+        let band="M",range=">255";
+        const map=[[100,"A"],[110,"B"],[120,"C"],[130,"D"],[140,"E"],[150,"F"],[165,"G"],[175,"H"],[185,"I"],[200,"J"],[225,"K"],[255,"L"]];
+        for(const[m,bn] of map){
+          if(co2<=m){band=bn;range=`≤${m}`;break;}
+        }
+        taxMain.textContent=`CO₂ ${co2} g/km → Band ${band} (${range} g/km)`;
+        taxExtra.textContent="1 Mar 2001 – 31 Mar 2017 (A–M bands).";
+      }else{
+        let label="";
+        if(co2===0)label="Zero emission";
+        else if(co2<=50)label="Ultra-low";
+        else if(co2<=100)label="Low";
+        else if(co2<=150)label="Medium";
+        else if(co2<=225)label="High";
+        else label="Very high";
+        taxMain.textContent=`CO₂ ${co2} g/km → ${label} range.`;
+        taxExtra.textContent="Cars from 1 Apr 2017 – first year CO₂-based then flat rate.";
+      }
     };
   </script>
 </body>
