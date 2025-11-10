@@ -348,6 +348,7 @@
 
     <div class="switcher">
       <button class="switch-btn active" data-target="tool-evmpg">EV Efficiency Tools</button>
+      <button class="switch-btn" data-target="tool-cost">Cost per mile</button>
       <button class="switch-btn" data-target="tool-tax">Car Tax Band Lookup</button>
     </div>
 
@@ -390,8 +391,15 @@
           </div>
         </div>
 
-        <!-- 3. Cost per mile comparison -->
-        <div class="section-divider">Cost per mile: EV vs petrol & diesel</div>
+        <p class="note">
+          Energy equivalence: ~9.5 kWh/L petrol, ~10.7 kWh/L diesel, 4.546 L per UK gallon.
+          All values are approximate – for comparison and explanation only.
+        </p>
+      </div>
+
+      <!-- Cost per mile tab -->
+      <div id="tool-cost" class="tool">
+        <h2>Cost per mile: EV vs petrol & diesel</h2>
         <p class="hint">
           Rough running-cost comparison. Defaults are typical-ish UK values – adjust for your deals and cars.
         </p>
@@ -457,11 +465,6 @@
             </div>
           </div>
         </div>
-
-        <p class="note">
-          Energy equivalence: ~9.5 kWh/L petrol, ~10.7 kWh/L diesel, 4.546 L per UK gallon.
-          All values are approximate – for comparison and explanation only.
-        </p>
       </div>
 
       <!-- Tax tools tab -->
@@ -566,7 +569,9 @@
       let stored = "tool-evmpg";
       try {
         const saved = localStorage.getItem("car-tools-last-tab");
-        if (saved === "tool-evmpg" || saved === "tool-tax") stored = saved;
+        if (saved === "tool-evmpg" || saved === "tool-cost" || saved === "tool-tax") {
+          stored = saved;
+        }
       } catch (e) {}
       activateTab(stored);
     })();
