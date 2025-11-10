@@ -4,10 +4,12 @@
   <meta charset="UTF-8" />
   <title>Mini Tools – Palindrome & Car Tax Band</title>
   <style>
+    :root {
+      --transition-speed: 0.2s;
+    }
+
     body {
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: radial-gradient(circle at top, #1f2937, #020617 60%);
-      color: #e5e7eb;
       min-height: 100vh;
       margin: 0;
       display: flex;
@@ -15,6 +17,52 @@
       align-items: flex-start;
       padding: 32px 16px;
       box-sizing: border-box;
+      transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
+    }
+
+    /* Theme variables */
+    body[data-theme="dark"] {
+      background: radial-gradient(circle at top, #1f2937, #020617 60%);
+      color: #e5e7eb;
+
+      --card-bg: #020617;
+      --border-color: #1f2937;
+      --muted-text: #9ca3af;
+      --input-bg: #020617;
+      --input-border: #4b5563;
+      --link-color: #60a5fa;
+      --result-ok-bg: #dcfce7;
+      --result-ok-text: #166534;
+      --result-no-bg: #fee2e2;
+      --result-no-text: #991b1b;
+      --result-info-bg: #0b1120;
+      --result-info-text: #e5e7eb;
+      --button-bg: linear-gradient(135deg, #2563eb, #22c55e);
+      --chip-bg: #020617;
+      --chip-border: #4b5563;
+      --header-subtle: #9ca3af;
+    }
+
+    body[data-theme="light"] {
+      background: #f3f4f6;
+      color: #111827;
+
+      --card-bg: #ffffff;
+      --border-color: #e5e7eb;
+      --muted-text: #6b7280;
+      --input-bg: #f9fafb;
+      --input-border: #d1d5db;
+      --link-color: #2563eb;
+      --result-ok-bg: #dcfce7;
+      --result-ok-text: #166534;
+      --result-no-bg: #fee2e2;
+      --result-no-text: #991b1b;
+      --result-info-bg: #eff6ff;
+      --result-info-text: #1e3a8a;
+      --button-bg: linear-gradient(135deg, #2563eb, #22c55e);
+      --chip-bg: #ffffff;
+      --chip-border: #d1d5db;
+      --header-subtle: #6b7280;
     }
 
     .container {
@@ -23,19 +71,46 @@
     }
 
     .header {
-      text-align: center;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
       margin-bottom: 16px;
     }
 
-    .header h1 {
+    .header-text {
+      text-align: left;
+    }
+
+    .header-text h1 {
       margin: 0 0 4px;
       font-size: 1.7rem;
     }
 
-    .header p {
+    .header-text p {
       margin: 0;
       font-size: 0.9rem;
-      color: #9ca3af;
+      color: var(--header-subtle);
+    }
+
+    .theme-toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border-color);
+      background: var(--card-bg);
+      font-size: 0.8rem;
+      cursor: pointer;
+      user-select: none;
+      transition: background var(--transition-speed) ease, border-color var(--transition-speed) ease;
+    }
+
+    .theme-toggle span {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
     }
 
     .switcher {
@@ -49,25 +124,29 @@
     .switch-btn {
       padding: 8px 16px;
       border-radius: 999px;
-      border: 1px solid #4b5563;
-      background: #020617;
-      color: #e5e7eb;
+      border: 1px solid var(--chip-border);
+      background: var(--chip-bg);
+      color: inherit;
       font-size: 0.9rem;
       cursor: pointer;
+      transition: background var(--transition-speed) ease, border-color var(--transition-speed) ease, transform 0.05s ease;
     }
 
     .switch-btn.active {
-      background: linear-gradient(135deg, #2563eb, #22c55e);
+      background: var(--button-bg);
       border-color: transparent;
       font-weight: 600;
+      color: #f9fafb;
+      transform: translateY(-1px);
     }
 
     .card {
-      background: #020617;
+      background: var(--card-bg);
       border-radius: 16px;
       padding: 22px 24px;
-      box-shadow: 0 20px 45px rgba(0,0,0,0.45);
-      border: 1px solid #1f2937;
+      box-shadow: 0 20px 45px rgba(0,0,0,0.18);
+      border: 1px solid var(--border-color);
+      transition: background var(--transition-speed) ease, border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease;
     }
 
     .tool {
@@ -94,12 +173,13 @@
       width: 100%;
       padding: 9px 11px;
       border-radius: 10px;
-      border: 1px solid #4b5563;
-      background: #020617;
-      color: #e5e7eb;
+      border: 1px solid var(--input-border);
+      background: var(--input-bg);
+      color: inherit;
       font-size: 0.95rem;
       box-sizing: border-box;
       margin-bottom: 12px;
+      transition: border-color var(--transition-speed) ease, box-shadow var(--transition-speed) ease, background var(--transition-speed) ease;
     }
 
     input:focus, select:focus {
@@ -108,21 +188,50 @@
       box-shadow: 0 0 0 1px #3b82f6;
     }
 
-    button.primary {
-      width: 100%;
-      padding: 10px 12px;
+    button.primary, button.secondary {
       border-radius: 10px;
       border: none;
-      font-size: 1rem;
+      font-size: 0.9rem;
       font-weight: 600;
       cursor: pointer;
-      background: linear-gradient(135deg, #2563eb, #22c55e);
-      color: white;
+      padding: 9px 12px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+      transition: opacity 0.12s ease, transform 0.05s ease, background var(--transition-speed) ease, border-color var(--transition-speed) ease;
+    }
+
+    button.primary {
+      width: 100%;
+      background: var(--button-bg);
+      color: #f9fafb;
       margin-top: 4px;
     }
 
-    button.primary:hover {
+    button.secondary {
+      margin-top: 10px;
+      background: transparent;
+      border: 1px solid var(--input-border);
+      color: inherit;
+    }
+
+    button.primary:hover,
+    button.secondary:hover {
       opacity: 0.96;
+      transform: translateY(-0.5px);
+    }
+
+    button.primary:active,
+    button.secondary:active {
+      transform: translateY(0);
+      opacity: 0.9;
+    }
+
+    button.secondary[disabled] {
+      opacity: 0.4;
+      cursor: default;
+      transform: none;
     }
 
     .result {
@@ -134,43 +243,67 @@
     }
 
     .result.ok {
-      background: #dcfce7;
-      color: #166534;
+      background: var(--result-ok-bg);
+      color: var(--result-ok-text);
     }
 
     .result.no {
-      background: #fee2e2;
-      color: #991b1b;
+      background: var(--result-no-bg);
+      color: var(--result-no-text);
     }
 
     .result.info {
-      background: #0b1120;
-      color: #e5e7eb;
+      background: var(--result-info-bg);
+      color: var(--result-info-text);
       border: 1px solid #1d4ed8;
     }
 
     .hint, .note {
       margin-top: 8px;
       font-size: 0.8rem;
-      color: #9ca3af;
+      color: var(--muted-text);
       line-height: 1.4;
     }
 
     a {
-      color: #60a5fa;
+      color: var(--link-color);
       text-decoration: none;
     }
 
     a:hover {
       text-decoration: underline;
     }
+
+    .tax-buttons {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 6px;
+    }
+
+    .tax-buttons button.secondary {
+      flex: 0 0 auto;
+    }
+
+    .copy-status {
+      font-size: 0.8rem;
+      color: var(--muted-text);
+      margin-top: 4px;
+      min-height: 1em;
+    }
   </style>
 </head>
-<body>
+<body data-theme="dark">
   <div class="container">
     <div class="header">
-      <h1>Mini Tools</h1>
-      <p>Palindrome checker & UK car tax band lookup (CO₂-based)</p>
+      <div class="header-text">
+        <h1>Mini Tools</h1>
+        <p>Palindrome checker & UK car tax band lookup (CO₂-based)</p>
+      </div>
+      <button class="theme-toggle" id="theme-toggle" type="button">
+        <span id="theme-icon">🌙</span>
+        <span id="theme-label">Dark</span>
+      </button>
     </div>
 
     <div class="switcher">
@@ -215,6 +348,13 @@
           <div id="tax-extra" class="hint"></div>
         </div>
 
+        <div class="tax-buttons">
+          <button type="button" class="secondary" id="copy-tax-btn" disabled>
+            📋 Copy summary
+          </button>
+        </div>
+        <div id="copy-status" class="copy-status"></div>
+
         <p class="note">
           This helper gives a quick view of CO₂-based bands only. For official, up-to-date
           VED amounts – including the standard rate from year 2, EV rules and the
@@ -228,6 +368,45 @@
   </div>
 
   <script>
+    // --- Theme handling ---
+    const body = document.body;
+    const themeToggle = document.getElementById("theme-toggle");
+    const themeIcon = document.getElementById("theme-icon");
+    const themeLabel = document.getElementById("theme-label");
+
+    function applyTheme(theme) {
+      body.setAttribute("data-theme", theme);
+      if (theme === "light") {
+        themeIcon.textContent = "☀️";
+        themeLabel.textContent = "Light";
+      } else {
+        themeIcon.textContent = "🌙";
+        themeLabel.textContent = "Dark";
+      }
+      try {
+        localStorage.setItem("mini-tools-theme", theme);
+      } catch (e) {
+        // Ignore if storage isn't available
+      }
+    }
+
+    // Load stored theme if present
+    (function initTheme() {
+      let stored;
+      try {
+        stored = localStorage.getItem("mini-tools-theme");
+      } catch (e) {
+        stored = null;
+      }
+      applyTheme(stored === "light" || stored === "dark" ? stored : "dark");
+    })();
+
+    themeToggle.addEventListener("click", () => {
+      const current = body.getAttribute("data-theme") || "dark";
+      const next = current === "dark" ? "light" : "dark";
+      applyTheme(next);
+    });
+
     // --- Tool switcher ---
     const switchButtons = document.querySelectorAll(".switch-btn");
     const tools = document.querySelectorAll(".tool");
@@ -306,7 +485,7 @@
       return { band: "M", range: "Over 255 g/km" };
     }
 
-    // Post-2017 first-year CO₂ ranges (no letters, just ranges)
+    // Post-2017 first-year CO₂ ranges (descriptive labels)
     function getBandForCo2_2017plus(co2) {
       if (co2 === 0)   return { label: "Zero emission", range: "0 g/km" };
       if (co2 <= 50)   return { label: "Ultra-low", range: "1–50 g/km" };
@@ -329,6 +508,10 @@
     const taxResultBox = document.getElementById("tax-result");
     const taxMain = document.getElementById("tax-main");
     const taxExtra = document.getElementById("tax-extra");
+    const copyBtn = document.getElementById("copy-tax-btn");
+    const copyStatus = document.getElementById("copy-status");
+
+    let currentTaxSummary = "";
 
     function lookupTaxBand() {
       const regPeriod = regSelect.value;
@@ -336,6 +519,9 @@
       const co2 = parseFloat(raw);
 
       taxResultBox.style.display = "block";
+      currentTaxSummary = "";
+      copyBtn.disabled = true;
+      copyStatus.textContent = "";
 
       if (regPeriod === "other") {
         taxMain.textContent =
@@ -356,6 +542,10 @@
         taxMain.textContent = `CO₂ ${co2.toFixed(0)} g/km → Band ${data.band} (${data.range})`;
         taxExtra.textContent =
           "Band letters A–M apply to cars first registered between 1 March 2001 and 31 March 2017. Check gov.uk for the current annual amount.";
+
+        currentTaxSummary =
+          `CO₂ ${co2.toFixed(0)} g/km – VED band ${data.band} (${data.range}), pre-2017 CO₂-based system.`;
+        copyBtn.disabled = false;
         return;
       }
 
@@ -365,6 +555,10 @@
           `CO₂ ${co2.toFixed(0)} g/km → falls in the “${data.label}” first-year CO₂ range (${data.range}).`;
         taxExtra.textContent =
           "For cars registered from 1 April 2017, the first year of VED is CO₂-based; from year 2 onwards it moves to a flat standard rate, with an extra supplement if the list price was over £40,000. Use gov.uk for the exact figures.";
+
+        currentTaxSummary =
+          `CO₂ ${co2.toFixed(0)} g/km – registered on/after 1 April 2017, first-year VED in “${data.label}” CO₂ range (${data.range}); standard-rate VED from year 2 (supplement may apply over £40,000 list).`;
+        copyBtn.disabled = false;
         return;
       }
     }
@@ -373,6 +567,39 @@
     co2Input.addEventListener("keydown", e => {
       if (e.key === "Enter") lookupTaxBand();
     });
+
+    // Copy to clipboard
+    async function copyTaxSummary() {
+      if (!currentTaxSummary) return;
+
+      try {
+        if (navigator.clipboard && navigator.clipboard.writeText) {
+          await navigator.clipboard.writeText(currentTaxSummary);
+        } else {
+          // Fallback for very old browsers
+          const temp = document.createElement("textarea");
+          temp.value = currentTaxSummary;
+          temp.style.position = "fixed";
+          temp.style.left = "-9999px";
+          document.body.appendChild(temp);
+          temp.focus();
+          temp.select();
+          document.execCommand("copy");
+          document.body.removeChild(temp);
+        }
+
+        copyStatus.textContent = "Summary copied to clipboard.";
+        copyBtn.textContent = "✔ Copied";
+        setTimeout(() => {
+          copyBtn.textContent = "📋 Copy summary";
+          copyStatus.textContent = "";
+        }, 1500);
+      } catch (e) {
+        copyStatus.textContent = "Could not copy automatically – you can still highlight and copy the text above.";
+      }
+    }
+
+    copyBtn.addEventListener("click", copyTaxSummary);
   </script>
 </body>
 </html>
