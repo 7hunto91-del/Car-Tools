@@ -41,70 +41,176 @@
     .result{margin-top:14px;padding:10px 12px;border-radius:10px;display:none;background:var(--result-info-bg);color:var(--result-info-text);}
     .hint,.note{margin-top:8px;font-size:0.8rem;color:var(--muted-text);line-height:1.4;}
     .section-divider{margin:16px 0 10px;border-top:1px solid var(--border-color);padding-top:10px;font-size:0.85rem;color:var(--muted-text);font-weight:600;text-transform:uppercase;}
-  </style>
-</head>
-<body data-theme="dark">
-  <div class="container">
-    <div class="header">
-      <div class="header-text">
-        <h1>Car Tools</h1>
-        <p>EV efficiency converters & UK VED lookup</p>
-      </div>
-      <button class="theme-toggle" id="theme-toggle" type="button">
-        <span id="theme-icon">🌙</span><span id="theme-label">Dark</span>
-      </button>
-    </div>
+<style>
+  :root { --transition-speed: 0.2s; }
 
-    <div class="switcher">
-      <button class="switch-btn active" data-target="tool-evmpg">EV Efficiency Tools</button>
-      <button class="switch-btn" data-target="tool-tax">Car Tax Band Lookup</button>
-    </div>
+  body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    min-height: 100vh;
+    margin: 0;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+    padding: 32px 16px;
+    box-sizing: border-box;
+    transition: background var(--transition-speed) ease, color var(--transition-speed) ease;
+  }
 
-    <div class="card">
-      <!-- EV tool (Estimate first, mpg-e second) -->
-      <div id="tool-evmpg" class="tool active">
-        <h2>EV Efficiency Tools</h2>
+  /* 🌙 Dark mode theme */
+  body[data-theme="dark"] {
+    background: radial-gradient(circle at top, #1f2937, #020617 60%);
+    color: #f3f4f6; /* light text for readability */
+    --card-bg: #020617;
+    --border-color: #1f2937;
+    --muted-text: #d1d5db;
+    --input-bg: #0f172a;
+    --input-border: #334155;
+    --link-color: #93c5fd;
+    --result-info-bg: #0b1120;
+    --result-info-text: #e5e7eb;
+    --button-bg: linear-gradient(135deg, #2563eb, #22c55e);
+    --chip-bg: #020617;
+    --chip-border: #475569;
+  }
 
-        <div class="section-divider">Estimate mi/kWh from range</div>
-        <input id="ev-pack" type="number" min="0" step="0.1" placeholder="Usable battery (kWh)" />
-        <input id="ev-soc" type="number" min="0" max="100" placeholder="Battery % for that range" />
-        <input id="ev-range" type="number" min="0" placeholder="Displayed range (miles)" />
-        <button class="primary" id="ev-estimate-btn">Estimate efficiency</button>
-        <div id="ev-est-result" class="result"><div id="ev-est-text"></div></div>
+  /* ☀️ Light mode theme */
+  body[data-theme="light"] {
+    background: #f3f4f6;
+    color: #111827;
+    --card-bg: #ffffff;
+    --border-color: #e5e7eb;
+    --muted-text: #6b7280;
+    --input-bg: #f9fafb;
+    --input-border: #d1d5db;
+    --link-color: #2563eb;
+    --result-info-bg: #eff6ff;
+    --result-info-text: #1e3a8a;
+    --button-bg: linear-gradient(135deg, #2563eb, #22c55e);
+    --chip-bg: #ffffff;
+    --chip-border: #d1d5db;
+  }
 
-        <div class="section-divider">Miles per kWh → mpg equivalent</div>
-        <input id="ev-mpkwh" type="number" min="0" step="0.1" placeholder="Efficiency (mi/kWh)" />
-        <input id="ev-price" type="number" min="0" step="0.1" placeholder="Electricity price (p/kWh, optional)" />
-        <button class="primary" id="ev-calc-btn">Calculate</button>
-        <div id="ev-result" class="result"><div id="ev-lines"></div><div id="ev-cost-line" class="hint"></div></div>
+  .container { width: 100%; max-width: 720px; }
 
-        <p class="note">
-          ~9.5 kWh/L petrol · 10.7 kWh/L diesel · 4.546 L = 1 UK gal.  
-          Estimates are for comparison only.
-        </p>
-      </div>
+  .header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
 
-      <!-- Car tax band tool -->
-      <div id="tool-tax" class="tool">
-        <h2>Car Tax Band Lookup (UK)</h2>
-        <label for="reg-period">Registration period</label>
-        <select id="reg-period">
-          <option value="2001-2017">1 Mar 2001 – 31 Mar 2017 (A–M bands)</option>
-          <option value="2017plus">On or after 1 Apr 2017 (modern system)</option>
-        </select>
-        <label for="co2">CO₂ emissions (g/km)</label>
-        <input id="co2" type="number" min="0" placeholder="e.g. 119" />
-        <button class="primary" id="lookup-btn">Look up tax band</button>
-        <div id="tax-result" class="result">
-          <div id="tax-main"></div><div id="tax-extra" class="hint"></div>
-        </div>
-        <p class="note">
-          Quick CO₂-based view only. For full rates and expensive-car supplement,  
-          see <a href="https://www.gov.uk/vehicle-tax-rate-tables" target="_blank">gov.uk</a>.
-        </p>
-      </div>
-    </div>
-  </div>
+  .header-text h1 {
+    margin: 0 0 4px;
+    font-size: 1.7rem;
+    color: #fff; /* white title in dark mode */
+  }
+
+  .header-text p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--muted-text);
+  }
+
+  .theme-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--border-color);
+    background: var(--card-bg);
+    color: #f3f4f6; /* make button text white in dark mode */
+    font-size: 0.8rem;
+    cursor: pointer;
+  }
+
+  .switcher {
+    display: flex;
+    justify-content: center;
+    margin: 20px auto 18px;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .switch-btn {
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1px solid var(--chip-border);
+    background: var(--chip-bg);
+    color: inherit;
+    cursor: pointer;
+  }
+
+  .switch-btn.active {
+    background: var(--button-bg);
+    color: #ffffff;
+    border: none;
+  }
+
+  .card {
+    background: var(--card-bg);
+    border-radius: 16px;
+    padding: 22px 24px;
+    box-shadow: 0 20px 45px rgba(0,0,0,0.18);
+    border: 1px solid var(--border-color);
+  }
+
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 0.9rem;
+    font-weight: 600;
+  }
+
+  input, select {
+    width: 100%;
+    padding: 9px 11px;
+    border-radius: 10px;
+    border: 1px solid var(--input-border);
+    background: var(--input-bg);
+    color: inherit;
+    font-size: 0.95rem;
+    margin-bottom: 12px;
+  }
+
+  button.primary {
+    width: 100%;
+    padding: 10px 12px;
+    border-radius: 10px;
+    border: none;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--button-bg);
+    color: #ffffff;
+  }
+
+  .result {
+    margin-top: 14px;
+    padding: 10px 12px;
+    border-radius: 10px;
+    display: none;
+    background: var(--result-info-bg);
+    color: var(--result-info-text);
+  }
+
+  .hint, .note {
+    margin-top: 8px;
+    font-size: 0.8rem;
+    color: var(--muted-text);
+    line-height: 1.4;
+  }
+
+  .section-divider {
+    margin: 16px 0 10px;
+    border-top: 1px solid var(--border-color);
+    padding-top: 10px;
+    font-size: 0.85rem;
+    color: var(--muted-text);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+</style>
 
   <script>
     // theme toggle
@@ -196,3 +302,4 @@
   </script>
 </body>
 </html>
+
