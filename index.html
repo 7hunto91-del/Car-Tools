@@ -250,10 +250,18 @@
     <input id="s3_petrol" type="number" placeholder="e.g. 150">
   </div>
 
-  <div class="field">
+ <div class="field">
     <label>Diesel price (p per litre)</label>
     <input id="s3_diesel" type="number" placeholder="e.g. 160">
   </div>
+
+  <div class="field">
+    <label>Postcode (optional, for local prices)</label>
+    <input id="s3_postcode" type="text" placeholder="e.g. SG1 2BE">
+    <button type="button" id="s3_use_local" class="small-btn">Use local supermarket prices</button>
+  </div>
+
+  <p class="muted" id="s3_location_note"></p>
 
   <div class="result-box">
     <div class="result-title">Result</div>
@@ -392,13 +400,20 @@ function recalcStep2() {
 s2_eff.oninput = s2_ppk.oninput = recalcStep2;
 
 /* STEP 3 */
-const s3_petrol     = document.getElementById("s3_petrol");
-const s3_diesel     = document.getElementById("s3_diesel");
-const s3_ev         = document.getElementById("s3_ev");
-const s3_petrol_cpm = document.getElementById("s3_petrol_cpm");
-const s3_diesel_cpm = document.getElementById("s3_diesel_cpm");
-const s3_petrolmpg  = document.getElementById("s3_petrolmpg");
-const s3_dieselmpg  = document.getElementById("s3_dieselmpg");
+const s3_petrol       = document.getElementById("s3_petrol");
+const s3_diesel       = document.getElementById("s3_diesel");
+const s3_ev           = document.getElementById("s3_ev");
+const s3_petrol_cpm   = document.getElementById("s3_petrol_cpm");
+const s3_diesel_cpm   = document.getElementById("s3_diesel_cpm");
+const s3_petrolmpg    = document.getElementById("s3_petrolmpg");
+const s3_dieselmpg    = document.getElementById("s3_dieselmpg");
+const s3_postcode     = document.getElementById("s3_postcode");
+const s3_use_local    = document.getElementById("s3_use_local");
+const s3_location_note= document.getElementById("s3_location_note");
+
+// will hold all supermarket stations and last updated from proxy
+let fuelStations = null;
+let fuelLastUpdated = null;
 
 function recalcStep3() {
   let eff = parseFloat(s3_eff.value);
@@ -435,6 +450,33 @@ function recalcStep3() {
   }
 }
 s3_eff.oninput = s3_ppk.oninput = s3_petrol.oninput = s3_diesel.oninput = recalcStep3;
+
+// helper: compute averages from an array of stations using E10/E5 for petrol and B7 for diesel
+function computeFuelAveragesFromStations(stations) {
+  const petrolPrices = [];
+  const dieselPrices = [];
+
+  for (const st of stations) {
+    const prices = st.prices || {};
+    if (typeof prices.E10 === "number") {
+      petrolPrices.push(prices.E10);
+    } else if (typeof prices.E5 === "number") {
+      petrolPrices.push(prices.E5);
+    }
+    if (typeof prices.B7 === "number") {
+      dieselPrices.push(prices.B7);
+    }
+  }
+
+  const avg = arr =>
+    arr.length ? arr.reduce((a, b) => a + b, 0) / arr.length : null;
+
+  return {
+    petrolAvg: petrolPrices.length ? avg(petrolPrices) : null,
+    dieselAvg: dieselPrices.length ? avg(dieselPrices) : null
+  };
+}
+
 // --- Auto-fill petrol & diesel from Cloudflare fuel proxy ---
 async function autoFillFuelFromProxy() {
   try {
@@ -446,46 +488,35 @@ async function autoFillFuelFromProxy() {
 
     const data = await res.json();
 
-    // Expected shape: { last_updated, stations: [ { prices: {E10, E5, B7} } ] }
+    // Expected shape from worker: { last_updated, stations: [...] }
     const stations = Array.isArray(data.stations) ? data.stations : [];
     if (!stations.length) {
       console.warn("No stations in fuel data", data);
       return;
     }
 
-    const petrolPrices = [];
-    const dieselPrices = [];
+    fuelStations = stations;
+    fuelLastUpdated = data.last_updated || data.lastUpdated || null;
 
-    for (const st of stations) {
-      const prices = st.prices || {};
-      // E10/E5 = petrol/unleaded, B7 = diesel
-      if (typeof prices.E10 === "number") {
-        petrolPrices.push(prices.E10);
-      } else if (typeof prices.E5 === "number") {
-        petrolPrices.push(prices.E5);
-      }
-      if (typeof prices.B7 === "number") {
-        dieselPrices.push(prices.B7);
-      }
-    }
+    const { petrolAvg, dieselAvg } = computeFuelAveragesFromStations(stations);
 
-    if (!petrolPrices.length && !dieselPrices.length) {
+    if (!petrolAvg && !dieselAvg) {
       console.warn("No usable fuel prices found in stations");
       return;
     }
 
-    const avg = arr => arr.reduce((a, b) => a + b, 0) / arr.length;
-
-    if (petrolPrices.length) {
-      const petrolAvg = avg(petrolPrices);
+    if (petrolAvg) {
       s3_petrol.value = petrolAvg.toFixed(1);   // pence per litre
       console.log("Petrol avg (p/L):", petrolAvg);
     }
-
-    if (dieselPrices.length) {
-      const dieselAvg = avg(dieselPrices);
-      s3_diesel.value = dieselAvg.toFixed(1);   // pence per litre
+    if (dieselAvg) {
+      s3_diesel.value = dieselAvg.toFixed(1);
       console.log("Diesel avg (p/L):", dieselAvg);
+    }
+
+    if (s3_location_note) {
+      const updatedText = fuelLastUpdated ? `Last updated ${fuelLastUpdated}.` : "";
+      s3_location_note.textContent = `Using national supermarket average prices. ${updatedText}`;
     }
 
     recalcStep3();
@@ -494,6 +525,62 @@ async function autoFillFuelFromProxy() {
   }
 }
 
+// use postcode outward code to average nearby stations
+function applyFuelForPostcode() {
+  if (!fuelStations || !fuelStations.length) {
+    console.warn("No fuel stations loaded yet");
+    return;
+  }
+
+  const raw = s3_postcode.value.trim().toUpperCase();
+  if (!raw) {
+    // if no postcode, go back to national average
+    autoFillFuelFromProxy();
+    return;
+  }
+
+  // Outward code = everything up to first space, no spaces, e.g. "SG1"
+  const cleaned = raw.replace(/\s+/g, "");
+  const match = cleaned.match(/^[A-Z0-9]+/);
+  if (!match) {
+    console.warn("Could not understand postcode", raw);
+    return;
+  }
+  const outward = match[0];
+
+  const localStations = fuelStations.filter(st => {
+    if (!st.postcode) return false;
+    const pc = String(st.postcode).toUpperCase().replace(/\s+/g, "");
+    return pc.startsWith(outward);
+  });
+
+  const sourceStations = localStations.length ? localStations : fuelStations;
+  const { petrolAvg, dieselAvg } = computeFuelAveragesFromStations(sourceStations);
+
+  if (petrolAvg) {
+    s3_petrol.value = petrolAvg.toFixed(1);
+  }
+  if (dieselAvg) {
+    s3_diesel.value = dieselAvg.toFixed(1);
+  }
+  recalcStep3();
+
+  if (s3_location_note) {
+    if (localStations.length) {
+      s3_location_note.textContent =
+        `Using average prices for ${outward} area from ${localStations.length} nearby supermarket stations.`;
+    } else {
+      s3_location_note.textContent =
+        `Could not find local stations for ${raw}. Showing national supermarket average instead.`;
+    }
+  }
+}
+
+if (s3_use_local) {
+  s3_use_local.addEventListener("click", applyFuelForPostcode);
+}
+
+// run once page is ready
 window.addEventListener("DOMContentLoaded", autoFillFuelFromProxy);
 
 
@@ -526,7 +613,6 @@ function recalcStep4() {
   }
 }
 s4_kwh.oninput = s4_start.oninput = s4_end.oninput = s4_power.oninput = recalcStep4;
-
 </script>
 
   <div style="text-align:center; padding:1rem; font-size:0.8rem; color:#6b7280;">
@@ -535,5 +621,6 @@ s4_kwh.oninput = s4_start.oninput = s4_end.oninput = s4_power.oninput = recalcSt
 
 </body>
 </html>
+
 
 
