@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>Car Tools – EV Efficiency, Charging & VED</title>
+  <title>Car Tools – EV Efficiency & Charging</title>
 
   <!-- Simple emoji favicon -->
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ctext y='0.9em' font-size='90'%3E🚗%3C/text%3E%3C/svg%3E">
@@ -156,7 +156,7 @@
     <div class="header">
       <div class="header-text">
         <h1>Car Tools</h1>
-        <p>EV efficiency, charging & UK VED lookup</p>
+        <p>EV efficiency, charging & cost per mile</p>
       </div>
       <button class="theme-toggle" id="theme-toggle" type="button">
         <span id="theme-icon">🌙</span>
@@ -168,7 +168,6 @@
       <button class="switch-btn active" data-target="tool-evmpg">EV Efficiency Tools</button>
       <button class="switch-btn" data-target="tool-charge">Charging time</button>
       <button class="switch-btn" data-target="tool-cost">Cost per mile</button>
-      <button class="switch-btn" data-target="tool-tax">Car Tax Band Lookup</button>
     </div>
 
     <div class="card">
@@ -319,33 +318,6 @@
         </div>
       </div>
 
-      <!-- Tax tools tab -->
-      <div id="tool-tax" class="tool">
-        <h2>Car Tax Band Lookup (UK)</h2>
-        <label for="reg-period">Registration period</label>
-        <select id="reg-period">
-          <option value="2001-2017">1 Mar 2001 – 31 Mar 2017 (A–M bands)</option>
-          <option value="2017plus">On or after 1 Apr 2017 (modern system)</option>
-        </select>
-
-        <label for="co2">CO₂ emissions (g/km)</label>
-        <input id="co2" type="number" min="0" placeholder="e.g. 119" />
-
-        <button class="primary" id="lookup-btn">Look up tax band</button>
-
-        <div id="tax-result" class="result">
-          <div class="result-header"><span>Result</span><button type="button" class="copy-btn" data-copy-target="tax-result-text">Copy</button></div>
-          <div id="tax-result-text">
-            <div id="tax-main"></div>
-            <div id="tax-extra" class="hint"></div>
-          </div>
-        </div>
-
-        <p class="note">
-          Quick CO₂-based view only. For full, up-to-date VED rates and the expensive-car supplement,
-          see <a href="https://www.gov.uk/vehicle-tax-rate-tables" target="_blank" rel="noreferrer">gov.uk</a>.
-        </p>
-      </div>
     </div>
   </div>
 
@@ -392,7 +364,7 @@
       let stored = "tool-evmpg";
       try {
         const saved = localStorage.getItem("car-tools-last-tab");
-        if (["tool-evmpg","tool-charge","tool-cost","tool-tax"].includes(saved)) stored = saved;
+        if (["tool-evmpg","tool-charge","tool-cost"].includes(saved)) stored = saved;
       } catch (e) {}
       activateTab(stored);
     })();
@@ -602,57 +574,6 @@
         }
       });
     });
-
-    // --- Tax lookup ---
-    const taxMain = document.getElementById("tax-main");
-    const taxExtra = document.getElementById("tax-extra");
-    const taxResult = document.getElementById("tax-result");
-    const lookupBtn = document.getElementById("lookup-btn");
-    function lookupTaxBand() {
-      const co2 = parseFloat(document.getElementById("co2").value);
-      const period = document.getElementById("reg-period").value;
-      taxResult.style.display = "block";
-
-      if (!co2 || co2 < 0) {
-        taxMain.textContent = "Enter a valid CO₂ value.";
-        taxExtra.textContent = "";
-        return;
-      }
-
-      if (period === "2001-2017") {
-        let band = "M";
-        let rangeLabel = "Over 255 g/km";
-        const bands = [
-          [100, "A"], [110, "B"], [120, "C"], [130, "D"], [140, "E"],
-          [150, "F"], [165, "G"], [175, "H"], [185, "I"], [200, "J"],
-          [225, "K"], [255, "L"]
-        ];
-        for (const [max, b] of bands) {
-          if (co2 <= max) {
-            band = b;
-            rangeLabel = `Up to ${max} g/km`;
-            break;
-          }
-        }
-        taxMain.textContent = `CO₂ ${co2.toFixed(0)} g/km → Band ${band} (${rangeLabel})`;
-        taxExtra.textContent =
-          "For cars first registered between 1 March 2001 and 31 March 2017 (bands A–M).";
-      } else {
-        let label;
-        if (co2 === 0) label = "Zero emission";
-        else if (co2 <= 50) label = "Ultra-low";
-        else if (co2 <= 100) label = "Low";
-        else if (co2 <= 150) label = "Medium";
-        else if (co2 <= 225) label = "High";
-        else label = "Very high";
-
-        taxMain.textContent =
-          `CO₂ ${co2.toFixed(0)} g/km → ${label} first-year CO₂ range.`;
-        taxExtra.textContent =
-          "For cars from 1 April 2017: first year is CO₂-based, then a flat standard rate plus any expensive-car supplement.";
-      }
-    }
-    lookupBtn.addEventListener("click", lookupTaxBand);
 
     // --- Copy buttons ---
     document.querySelectorAll(".copy-btn").forEach(btn => {
