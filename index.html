@@ -60,3 +60,188 @@
         transition: 0.2s;
         margin: 5px;
     }
+
+    .tab.active {
+        background: var(--blue);
+        color: white;
+    }
+
+    .card {
+        background: var(--card);
+        padding: 20px;
+        border-radius: 10px;
+        border: 1px solid var(--border);
+        margin-bottom: 20px;
+    }
+
+    .input-group {
+        margin-bottom: 15px;
+    }
+
+    .input-group label {
+        display: block;
+        margin-bottom: 5px;
+        font-weight: bold;
+    }
+
+    .input-group input {
+        width: 100%;
+        padding: 10px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: var(--bg);
+        color: var(--text);
+    }
+
+    .output-box {
+        background: white;
+        padding: 15px;
+        border-radius: 6px;
+        border: 1px solid var(--blue);
+        font-size: 18px;
+        margin-top: 15px;
+        min-height: 40px;
+    }
+
+    .btn-copy {
+        background: var(--blue);
+        color: white;
+        padding: 6px 12px;
+        border: none;
+        border-radius: 4px;
+        cursor: pointer;
+        float: right;
+        margin-top: -5px;
+    }
+
+    #copyright {
+        text-align: center;
+        margin-top: 40px;
+        margin-bottom: 20px;
+        font-size: 14px;
+        opacity: 0.7;
+    }
+
+    .toggle-dark {
+        position: fixed;
+        top: 15px;
+        right: 20px;
+        padding: 10px;
+        background: var(--card);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        cursor: pointer;
+        color: var(--text);
+    }
+</style>
+</head>
+
+<body>
+<header>Car Tools</header>
+
+<div class="toggle-dark" onclick="toggleDarkMode()">🌙 Dark Mode</div>
+
+<div class="container">
+
+    <div class="tabs">
+        <div class="tab active" onclick="showTab('evrange')">EV Efficiency Tools</div>
+        <div class="tab" onclick="showTab('fuelcalc')">EV vs Petrol & Diesel</div>
+    </div>
+
+    <!-- EV RANGE TAB -->
+    <div id="evrange" class="tab-content" style="display:block;">
+
+        <div class="card">
+            <h2>Estimate mi/kWh from displayed range</h2>
+
+            <div class="input-group">
+                <label>Displayed Range (miles)</label>
+                <input id="rangeMiles" type="number" placeholder="e.g. 210">
+            </div>
+
+            <div class="input-group">
+                <label>Battery Size (kWh)</label>
+                <input id="batterySize" type="number" placeholder="e.g. 62">
+            </div>
+
+            <button onclick="calcMpkwh()">Calculate</button>
+
+            <div class="output-box" id="mpkwhBox"></div>
+            <button class="btn-copy" onclick="copyText('mpkwhBox')">Copy</button>
+        </div>
+
+    </div>
+
+    <!-- FUEL CALCULATOR TAB -->
+    <div id="fuelcalc" class="tab-content" style="display:none;">
+
+        <div class="card">
+            <h2>EV vs Petrol & Diesel Cost</h2>
+
+            <div class="input-group">
+                <label>Enter postcode</label>
+                <input id="postcodeInput" type="text" placeholder="e.g. SG1">
+            </div>
+
+            <button onclick="lookupPrices()">Get Local Fuel Prices</button>
+
+            <div class="output-box" id="fuelPriceBox"></div>
+
+            <button class="btn-copy" onclick="copyText('fuelPriceBox')">Copy</button>
+
+        </div>
+
+    </div>
+
+</div>
+
+<div id="copyright">© 2025 Car Tools</div>
+
+<script>
+function showTab(id) {
+    document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(c => c.style.display = 'none');
+    event.target.classList.add('active');
+    document.getElementById(id).style.display = 'block';
+}
+
+function toggleDarkMode() {
+    document.body.classList.toggle('dark');
+}
+
+function copyText(id) {
+    const text = document.getElementById(id).innerText;
+    navigator.clipboard.writeText(text);
+}
+
+function calcMpkwh() {
+    let m = parseFloat(document.getElementById('rangeMiles').value);
+    let k = parseFloat(document.getElementById('batterySize').value);
+    if (!m || !k) return;
+
+    let result = (m / k).toFixed(2) + " mi/kWh";
+    document.getElementById('mpkwhBox').innerText = result;
+}
+
+async function lookupPrices() {
+    const pc = document.getElementById('postcodeInput').value;
+
+    document.getElementById('fuelPriceBox').innerText = "Fetching local prices...";
+
+    const url = `https://car-tools-worker.oliverhunt.workers.dev/prices?postcode=${pc}`;
+
+    try {
+        const res = await fetch(url);
+        const data = await res.json();
+
+        document.getElementById('fuelPriceBox').innerText =
+            `Local fuel prices:\nPetrol: ${data.petrol}p\nDiesel: ${data.diesel}p`;
+
+    } catch {
+        document.getElementById('fuelPriceBox').innerText = "Error fetching prices.";
+    }
+}
+</script>
+
+</body>
+</html>
